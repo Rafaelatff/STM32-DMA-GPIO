@@ -82,3 +82,68 @@ Then, we need to see how to trigger the DMA. In the project tree, we can see tha
 
 ![image](https://user-images.githubusercontent.com/58916022/212914938-e8ca5bd4-9f9c-4383-98da-2c74f22d2177.png)
 
+**Note: static functions are not able to be called by user application.**
+
+The function *HAL_DMA_Start* uses polling methode meanwhile the *HAL_DMA_START**_IT*** uses interruption mode.
+
+![image](https://user-images.githubusercontent.com/58916022/212972136-7a1cd906-0070-4bd5-9081-3c7be5daa30a.png)
+
+Besides, the API's return the type *HAL_StatusTypeDef*. 
+
+![image](https://user-images.githubusercontent.com/58916022/212972759-7ace76e8-3a94-4389-a884-91798fb7f5d1.png)
+
+For both API's, we need to send the following parameters:
+
+* DMA_HandleTypeDef \*hdma: &hdma_memtomem_dma2_stream0 (address of the variable for DMA stream 0).
+* uint32_t SrcAddress: Source address, (uint32_t) &led_data[0] (address of the led_data variable in first index, typecasted to uint32_t).
+* uint32_t DstAddress: Destiny address, (uint32_t) &GPIOA->ODR (address of output data register of port A, typecasted to uint32_t).
+* uint32_t DataLength: Data Length in bytes.
+
+And for the last step, we need to wait for the transfer to be complete. We use the function *HAL_DMA_PollForTransfer*. This function also returns a type *HAL_StatusTypeDef*.
+
+![image](https://user-images.githubusercontent.com/58916022/212982280-327b6433-3772-471f-8ee4-665fee97f936.png)
+
+Then we send the following parameters:
+
+* DMA_HandleTypeDef \*hdma:
+* HAL_DMA_LevelCompleteTypeDef CompleteLevel: can be 'HAL_DMA_FULL_TRANSFER' or 'HAL_DMA_HALF_TRANSFER' (enum).
+* uint32_t Timeout: uint32_t type or macro HAL_MAX_DELAY (function will wait for the DMA flax or timeout).
+
+Final code (without non important comments):
+
+```c
+int main(void)
+{
+  /* MCU Configuration--------------------------------------------------------*/
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+  
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART2_UART_Init();
+
+  /* Infinite loop */
+  while (1)
+  {
+	  HAL_DMA_Start (&hdma_memtomem_dma2_stream0, (uint32_t) &led_data[0], (uint32_t) &GPIOA->ODR, 1);
+	  HAL_DMA_PollForTransfer(&hdma_memtomem_dma2_stream0, HAL_DMA_FULL_TRANSFER, HAL_MAX_DELAY);
+
+	  /*delay of 1 sec*/
+	  current_ticks = HAL_GetTick();
+	  while ((current_ticks +1000) >= HAL_GetTick());
+
+	  HAL_DMA_Start (&hdma_memtomem_dma2_stream0, (uint32_t) &led_data[1], (uint32_t) &GPIOA->ODR, 1);
+	  HAL_DMA_PollForTransfer(&hdma_memtomem_dma2_stream0, HAL_DMA_FULL_TRANSFER, HAL_MAX_DELAY);
+
+	  /*delay of 1 sec*/
+	  current_ticks = HAL_GetTick();
+	  while ((current_ticks +1000) >= HAL_GetTick());
+  }
+}
+```
+
+Now let's do by interrupt.
