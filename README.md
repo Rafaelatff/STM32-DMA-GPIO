@@ -43,3 +43,42 @@ In 'Code Generation' tab, we set to 'Generate IRQ Handler' for the SysTick Timer
 Then justo go on 'Project' -> 'Generate Code' or 'Alt-K' to generate code.
 
 ### Code
+
+As we can see, the DMA was initialized. In main() we have tha calling for the function *MX_DMA_Init();* that bassicaly does (as set on CubeMX): 
+
+```c
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* Configure DMA request hdma_memtomem_dma2_stream0 on DMA2_Stream0 */
+  hdma_memtomem_dma2_stream0.Instance = DMA2_Stream0;
+  hdma_memtomem_dma2_stream0.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream0.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream0.Init.PeriphInc = DMA_PINC_DISABLE;
+  hdma_memtomem_dma2_stream0.Init.MemInc = DMA_MINC_DISABLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream0.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream0.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream0.Init.Priority = DMA_PRIORITY_LOW;
+  hdma_memtomem_dma2_stream0.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream0.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream0.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream0.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream0) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+}
+```
+
+Then I added the data to be transferred from SRAM to GPIO port A.
+
+![image](https://user-images.githubusercontent.com/58916022/212914272-99a3b64e-3232-4507-af6f-9b951779ea71.png)
+
+Then, we need to see how to trigger the DMA. In the project tree, we can see that there are two HAL drivers regarding DMA API's:
+
+![image](https://user-images.githubusercontent.com/58916022/212914938-e8ca5bd4-9f9c-4383-98da-2c74f22d2177.png)
+
