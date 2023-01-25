@@ -12,6 +12,12 @@ Basically, DMA work as master together with the processor, so the memory functio
 
 ![image](https://user-images.githubusercontent.com/58916022/212678646-9b3b67fd-e5ab-492b-86df-bc6e848dfea7.png)
 
+Each FIFO has room for 4 bytes. 
+
+Advantage 1: memory port is less accessed allowing other pending DMA request to access memory port.
+
+Advantage 2: allowing other bus masters to access the memory, thus decreasing the waiting time for other masters.
+
 **Generic steps to follow while using DMA:**
 * 1. Identify the DMAx Controller to use in application;
 * 2. Initialize the DMA;
